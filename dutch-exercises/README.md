@@ -13,6 +13,34 @@ level on the right topic.
 | `list_sources` | The curated catalog, filtered by level, skill or variant. |
 | `list_themes` | Everyday topics and grammar points with their Dutch search terms. |
 | `list_ratings` | Recent ratings. |
+| `render_styled` | Returns an explanation, an exercise set or `find_exercises` results as a standalone, styled HTML page (see below). |
+
+## Styled pages (`render_styled`)
+
+`render_styled` turns content into one HTML document the learner can save, print or send. It's a plain tool that
+returns text, so it works in every client, including Grok. Pass exactly one of:
+
+- `explanation`: a grammar or vocabulary explanation the agent writes (title, level, summary, sections, examples,
+  an optional table and common mistakes).
+- `exercise_set`: exercises the agent writes, with answer keys. Item types are `mc`, `gap` (`___` per gap),
+  `order`, `match` and `truefalse`. It's rendered as a printable worksheet: tick boxes for multiple choice and
+  true/false, write-in lines for gaps, shuffled word tiles, and two matching columns. An answer key comes at the
+  end (`include_answers`, on by default), on its own page when printed.
+- `results`: the `results` of an earlier `find_exercises` call, rendered as a reading list. `title`, `theme` and
+  `level` set the headline.
+
+The `style` parameter picks the look:
+
+| Style | Look |
+| --- | --- |
+| `editorial` (default) | New Yorker-inspired with a modern layout. Libre Caslon Display headlines, an italic Caslon deck, a drop cap, small-caps Inter Tight labels in one red accent, thick-thin and hairline rules, a black end mark, and square corners on every box, tag and tick box. |
+| `concertje` | The Concertje look from the concert digest emails (`dacostalindo/concerts`): near-black canvas, Redaction headlines, Inter, amber accent and pill shapes. |
+
+Both styles switch to light or dark with the reader's system setting, and have print rules. The page has inline CSS
+and no scripts. Fonts load from Google Fonts (and jsDelivr for Redaction), with system serif and sans fallbacks.
+The response text is the HTML itself; `structuredContent` only holds `style`, `content` and `bytes`. Agent text is
+HTML-escaped; `**bold**`, `*italic*`, `` `code` `` and `- ` bullets are supported. Shuffles are seeded from the
+content, so the same input always gives the same page.
 
 ## How it finds and grades exercises
 
