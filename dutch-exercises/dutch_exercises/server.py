@@ -7,6 +7,7 @@ Tools:
   rate_exercise      record how good an exercise turned out; ratings steer future rankings
   list_sources       the curated source catalog, filterable by level/skill/variant
   list_themes        the theme taxonomy (everyday topics and grammar points)
+  render_styled      an explanation, exercise set or results list as a styled, standalone HTML page
 """
 
 from __future__ import annotations
@@ -22,17 +23,20 @@ import httpx
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from mcp.server.transport_security import TransportSecuritySettings
+from mcp_types import CallToolResult, TextContent
 from pydantic import Field
 from starlette.requests import Request as HttpRequest
 from starlette.responses import JSONResponse
 
 from . import search as search_mod
 from .analyze import FetchError, check_url
+from .content import ExerciseCard, ExerciseSet, Explanation
 from .finder import Finder, normalize_url
 from .levels import LEVELS, parse_level
 from .scoring import Request, score
 from .sources import SKILLS, catalog, host_of, select_sources, source_for_url
 from .store import Store
+from .styled import Style, render_exercise_set, render_explanation, render_results
 from .themes import list_themes as _list_themes, resolve_theme
 
 log = logging.getLogger("dutch_exercises")
@@ -52,6 +56,8 @@ Workflow:
 4. After the learner has used an exercise, call rate_exercise (1-5) with a short note. Ratings of 1 hide the
    URL from future searches; good ratings boost it.
 Never present an exercise as matching a level or theme unless the result says so; level estimates are rough.
+To hand the learner a finished page (to save, print or send), call render_styled with an explanation, an
+exercise set or find_exercises results; it returns a standalone HTML document.
 """
 
 mcp = MCPServer(name="dutch-exercises", title="Dutch Exercise Finder", instructions=INSTRUCTIONS, version=VERSION)
@@ -71,6 +77,11 @@ def _level(value: str) -> str:
     if not lv:
         raise ToolError(f"Unknown level {value!r}. Use a CEFR level ({', '.join(LEVELS)}) or e.g. 'beginner'.")
     return lv
+
+
+def _soft_level(value: str) -> str:
+    """Normalise a level when it parses, keep it as written otherwise (display only)."""
+    return (parse_level(value) or value.strip()) if value else ""
 
 
 Skill = Literal["reading", "listening", "speaking", "writing", "vocabulary", "grammar"]
@@ -174,6 +185,47 @@ def list_themes() -> dict:
 @mcp.tool(description="Show the most recent exercise ratings.")
 def list_ratings(limit: int = Field(30, ge=1, le=200)) -> dict:
     return {"ratings": store().ratings(limit)}
+
+
+@mcp.tool(title="Render styled page",
+          description="Return content as a complete, standalone HTML page in a chosen style, ready to save, print "
+          "or send. Pass exactly one of: `explanation` (a grammar or vocabulary explanation you write), "
+          "`exercise_set` (exercises you write, rendered as a printable worksheet with an optional answer key) or "
+          "`results` (the results of an earlier find_exercises call, rendered as a reading list). Styles: "
+          "'editorial' (default; New Yorker-inspired magazine typography with Caslon headlines, an italic deck, a "
+          "drop cap, small-caps labels and hairline rules, in a modern layout with square edges) and 'concertje' "
+          "(dark, Redaction serif and heavy Inter, like the Concertje digest emails). Text fields support **bold**, "
+          "*italic*, `code` and '- ' bullet lines. The response text is the HTML document itself.")
+def render_styled(
+    style: Style = Field("editorial", description="'editorial' (New Yorker-inspired, square edges) or "
+                         "'concertje' (dark, like the Concertje digest emails)."),
+    explanation: Explanation | None = Field(None, description="A grammar or vocabulary explanation: title, level, "
+                                            "summary, sections, examples, table, common_mistakes."),
+    exercise_set: ExerciseSet | None = Field(None, description="Exercises with answer keys: title, level, "
+                                             "theme, instructions and items ('mc', 'gap', 'order', 'match', "
+                                             "'truefalse')."),
+    results: list[ExerciseCard] | None = Field(None, max_length=20, description="The `results` list of an "
+                                               "earlier find_exercises call."),
+    include_answers: bool = Field(True, description="Exercise sets: add an answer key at the end (on its own "
+                                  "page when printed)."),
+    title: str = Field("", max_length=200, description="Results only: the page headline."),
+    theme: str = Field("", max_length=120, description="Results only: the theme searched for."),
+    level: str = Field("", max_length=20, description="Results only: the level searched for."),
+) -> CallToolResult:
+    given = [name for name, v in (("explanation", explanation), ("exercise_set", exercise_set),
+                                  ("results", results)) if v is not None]
+    if len(given) != 1:
+        raise ToolError("Pass exactly one of explanation, exercise_set or results"
+                        + (f" (got {', '.join(given)})." if given else "."))
+    if explanation is not None:
+        page = render_explanation(explanation.model_copy(update={"level": _soft_level(explanation.level)}), style)
+    elif exercise_set is not None:
+        page = render_exercise_set(exercise_set.model_copy(update={"level": _soft_level(exercise_set.level)}), style,
+                                   include_answers)
+    else:
+        page = render_results(results, style, title=title, theme=theme, level=_soft_level(level))
+    return CallToolResult(content=[TextContent(type="text", text=page)],
+                          structured_content={"style": style, "content": given[0], "bytes": len(page.encode())})
 
 
 @mcp.custom_route("/healthz", methods=["GET"])
