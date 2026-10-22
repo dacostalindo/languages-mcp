@@ -30,6 +30,12 @@ class Store:
             CREATE TABLE IF NOT EXISTS ratings (
                 id INTEGER PRIMARY KEY, url TEXT, rating INTEGER, level TEXT, theme TEXT, note TEXT, at REAL);
             CREATE INDEX IF NOT EXISTS ratings_url ON ratings(url);
+            CREATE TABLE IF NOT EXISTS exercise_sets (
+                id TEXT PRIMARY KEY, title TEXT, level TEXT, theme TEXT, data TEXT, at REAL);
+            CREATE TABLE IF NOT EXISTS attempts (
+                id INTEGER PRIMARY KEY, set_id TEXT, item_id TEXT, item_type TEXT, correct INTEGER,
+                given TEXT, expected TEXT, at REAL);
+            CREATE INDEX IF NOT EXISTS attempts_set ON attempts(set_id);
         """)
 
     def _get(self, table: str, key_col: str, key: str, ttl: int):
@@ -80,3 +86,33 @@ class Store:
                 "SELECT url, rating, level, theme, note, at FROM ratings ORDER BY at DESC LIMIT ?", (limit,)
             ).fetchall()
         return [dict(zip(("url", "rating", "level", "theme", "note", "at"), r)) for r in rows]
+
+    def put_exercise_set(self, set_id: str, title: str, level: str, theme: str, data: dict) -> None:
+        with self._lock, self._db:
+            self._db.execute("INSERT OR REPLACE INTO exercise_sets(id, title, level, theme, data, at) "
+                             "VALUES (?,?,?,?,?,?)", (set_id, title, level, theme, json.dumps(data), time.time()))
+
+    def get_exercise_set(self, set_id: str) -> dict | None:
+        with self._lock:
+            row = self._db.execute("SELECT data FROM exercise_sets WHERE id=?", (set_id,)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def record_attempt(self, set_id: str, results: list[dict]) -> None:
+        """Store one attempt: a row per item (`item_id`, `type`, `correct`, `given`, `expected`)."""
+        at = time.time()
+        with self._lock, self._db:
+            self._db.executemany(
+                "INSERT INTO attempts(set_id, item_id, item_type, correct, given, expected, at) VALUES (?,?,?,?,?,?,?)",
+                [(set_id, r["item_id"], r["type"], int(bool(r["correct"])), r.get("given", ""),
+                  r.get("expected", ""), at) for r in results])
+
+    def attempts(self, limit: int = 20) -> list[dict]:
+        """Recent attempts, newest first: one entry per submission with its score and the wrong item ids."""
+        with self._lock:
+            rows = self._db.execute(
+                "SELECT a.set_id, a.at, SUM(a.correct), COUNT(*), s.title, s.level, s.theme, "
+                "GROUP_CONCAT(CASE WHEN a.correct=0 THEN a.item_id END) "
+                "FROM attempts a LEFT JOIN exercise_sets s ON s.id = a.set_id "
+                "GROUP BY a.set_id, a.at ORDER BY a.at DESC LIMIT ?", (limit,)).fetchall()
+        return [{"set_id": r[0], "at": r[1], "correct": r[2], "total": r[3], "title": r[4], "level": r[5],
+                 "theme": r[6], "wrong_items": r[7].split(",") if r[7] else []} for r in rows]

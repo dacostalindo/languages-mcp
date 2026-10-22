@@ -7,6 +7,9 @@ Tools:
   rate_exercise      record how good an exercise turned out; ratings steer future rankings
   list_sources       the curated source catalog, filterable by level/skill/variant
   list_themes        the theme taxonomy (everyday topics and grammar points)
+
+UI tools (MCP Apps views, with text fallbacks) live in ui_tools.py: show_exercises, show_explanation,
+show_exercise_set, record_attempt (app-only) and list_attempts.
 """
 
 from __future__ import annotations
@@ -34,6 +37,7 @@ from .scoring import Request, score
 from .sources import SKILLS, catalog, host_of, select_sources, source_for_url
 from .store import Store
 from .themes import list_themes as _list_themes, resolve_theme
+from .ui_tools import UI_INSTRUCTIONS, apps, register as register_ui_tools
 
 log = logging.getLogger("dutch_exercises")
 
@@ -54,7 +58,9 @@ Workflow:
 Never present an exercise as matching a level or theme unless the result says so; level estimates are rough.
 """
 
-mcp = MCPServer(name="dutch-exercises", title="Dutch Exercise Finder", instructions=INSTRUCTIONS, version=VERSION)
+mcp = MCPServer(name="dutch-exercises", title="Dutch Exercise Finder", instructions=INSTRUCTIONS + UI_INSTRUCTIONS,
+                version=VERSION, extensions=[apps])
+register_ui_tools(mcp)
 
 _store: Store | None = None
 

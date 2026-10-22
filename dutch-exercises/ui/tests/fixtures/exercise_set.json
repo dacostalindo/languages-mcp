@@ -1,0 +1,18 @@
+{
+  "title": "Perfectum: hebben of zijn?",
+  "level": "A2",
+  "theme": "voltooide tijd",
+  "instructions": "Maak de oefeningen. Klik daarna op **Check answers**.",
+  "items": [
+    {"type": "mc", "prompt": "Gisteren ___ ik naar de markt gegaan.", "options": ["heb", "ben", "is"], "answer": 1,
+     "explanation": "Gaan met een doel (naar de markt) → **zijn**."},
+    {"type": "gap", "text": "Wij ___ de hele avond tv ___.", "answers": [["hebben"], ["gekeken"]], "hint": "(kijken)",
+     "explanation": "Kijken → hebben + gekeken (onregelmatig)."},
+    {"type": "order", "prompt": "I have done my homework.", "words": ["Ik", "heb", "mijn", "huiswerk", "gemaakt"],
+     "explanation": "Het voltooid deelwoord staat aan het eind."},
+    {"type": "match", "prompt": "Verbind het werkwoord met het voltooid deelwoord.",
+     "pairs": [{"left": "lopen", "right": "gelopen"}, {"left": "zwemmen", "right": "gezwommen"}, {"left": "eten", "right": "gegeten"}]},
+    {"type": "truefalse", "statement": "‘Blijven’ gebruikt in het perfectum ‘hebben’.", "answer": false,
+     "explanation": "Het is: ik **ben** gebleven."}
+  ]
+}

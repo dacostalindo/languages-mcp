@@ -26,7 +26,7 @@ build-backend = "setuptools.build_meta"
 include = ["dutch_exercises*"]
 
 [tool.setuptools.package-data]
-dutch_exercises = ["data/*.json"]
+dutch_exercises = ["data/*.json", "ui_dist/*.html"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

@@ -1,0 +1,27 @@
+[
+  {
+    "score": 86, "title": "NT2 - A2 - Grammatica - Voltooide tijd - Oefening 1",
+    "url": "https://proefa.nt2taalmenu.nl/a2-grammatica-voltooide-tijd-1/", "source": "NT2 TaalMenu", "curated": true,
+    "level": {"stated": ["A2"], "estimated": null, "fit": "exact"}, "skills": ["grammar"], "formats": ["interactive"],
+    "has_answer_key": true, "free": true, "verified": true,
+    "why": ["curated source (quality 5/5)", "states level A2", "theme in title: voltooide tijd", "interactive exercise (H5P)"],
+    "warnings": [], "preview": "Kies het juiste hulpwerkwoord: hebben of zijn. Controleer daarna je antwoorden."
+  },
+  {
+    "score": 64, "title": "Perfectum met hebben en zijn – oefeningen",
+    "url": "https://www.dutchgrammar.com/en/?n=Verbs.Ex41", "source": "DutchGrammar.com", "curated": true,
+    "level": {"stated": [], "estimated": "A2", "fit": "estimated"}, "skills": ["grammar"], "formats": ["interactive"],
+    "has_answer_key": true, "free": true, "verified": true,
+    "why": ["curated source (quality 4/5)", "theme in title: perfectum", "answer checking"],
+    "warnings": ["page is partly in English"], "preview": "Fill in the correct form of the auxiliary verb.",
+    "found_via": "dutchgrammar.com/en/?n=Verbs.00"
+  },
+  {
+    "score": 38, "title": "Werkblad voltooide tijd (PDF)",
+    "url": "https://www.klascement.net/downloads/12345/", "source": "KlasCement", "curated": true,
+    "level": {"stated": ["B1"], "estimated": "B1", "fit": "close"}, "skills": ["grammar", "writing"], "formats": ["worksheet", "pdf"],
+    "has_answer_key": null, "free": true, "verified": false,
+    "why": ["theme in snippet: voltooide tijd"],
+    "warnings": ["not fetched: scored from search snippet only", "level B1 is above A2"], "preview": "Werkblad met 20 zinnen in de voltooide tijd."
+  }
+]
