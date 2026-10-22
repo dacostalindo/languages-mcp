@@ -1,0 +1,520 @@
+[
+  {
+    "id": "nt2taalmenu",
+    "name": "NT2 TaalMenu",
+    "domains": [
+      "nt2taalmenu.nl"
+    ],
+    "url": "https://nt2taalmenu.nl/",
+    "levels": [
+      "A0",
+      "B2"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing",
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "interactive",
+      "pdf",
+      "video"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 5,
+    "notes": "Free themed NT2 lessons from A0 to B2, aimed at the inburgering exam and Staatsexamen I/II. Lessons are numbered by level and skill; printable PDF booklets on the proef* subdomains.",
+    "site_search": "https://nt2taalmenu.nl/?s={q}"
+  },
+  {
+    "id": "oefenen",
+    "name": "Oefenen.nl (incl. Taalklas.nl)",
+    "domains": [
+      "oefenen.nl",
+      "taalklas.nl"
+    ],
+    "url": "https://oefenen.nl/",
+    "levels": [
+      "A0",
+      "B1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing",
+      "vocabulary"
+    ],
+    "formats": [
+      "interactive",
+      "video"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 5,
+    "notes": "Run by Stichting Expertisecentrum Oefenen.nl. Video-based programmes about everyday life (work, health, money, society). A free account saves progress; most content works without one."
+  },
+  {
+    "id": "nedbox",
+    "name": "NedBox",
+    "domains": [
+      "nedbox.be"
+    ],
+    "url": "https://nedbox.be/",
+    "levels": [
+      "A1",
+      "B2"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "vocabulary"
+    ],
+    "formats": [
+      "interactive",
+      "video"
+    ],
+    "variant": "be",
+    "free": true,
+    "quality": 5,
+    "notes": "Flemish platform of short authentic videos and articles, each with exercises at three levels (one star ≈ A1, two ≈ A2, three ≈ B1+). Searched through its public API, since the site is JavaScript-only.",
+    "connector": "nedbox"
+  },
+  {
+    "id": "staatsexamens",
+    "name": "Staatsexamens Nt2 (CvTE) practice exams",
+    "domains": [
+      "staatsexamensnt2.nl"
+    ],
+    "url": "https://www.staatsexamensnt2.nl/",
+    "levels": [
+      "B1",
+      "C1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing"
+    ],
+    "formats": [
+      "exam",
+      "interactive",
+      "pdf"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 5,
+    "notes": "Official practice exams for Staatsexamen Nt2 programma I (B1), II (B2) and III (C1)."
+  },
+  {
+    "id": "inburgeren",
+    "name": "Inburgeren.nl (DUO) practice exams",
+    "domains": [
+      "inburgeren.nl"
+    ],
+    "url": "https://www.inburgeren.nl/",
+    "levels": [
+      "A1",
+      "B1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing"
+    ],
+    "formats": [
+      "exam",
+      "interactive"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 5,
+    "notes": "Official DUO practice exams for the Dutch civic integration exam (A2 under the old law, B1 under Wi2021), plus KNM. Can be geo-restricted outside the Netherlands."
+  },
+  {
+    "id": "cnavt",
+    "name": "CNaVT",
+    "domains": [
+      "cnavt.org"
+    ],
+    "url": "https://cnavt.org/",
+    "levels": [
+      "A2",
+      "C1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing"
+    ],
+    "formats": [
+      "exam",
+      "pdf"
+    ],
+    "variant": "both",
+    "free": true,
+    "quality": 5,
+    "notes": "Certificaat Nederlands als Vreemde Taal: official sample exams per profile (A2 to C1) and a task bank (Takenbank)."
+  },
+  {
+    "id": "learndutch",
+    "name": "Learn Dutch (Bart de Pau)",
+    "domains": [
+      "learndutch.org"
+    ],
+    "url": "https://www.learndutch.org/",
+    "levels": [
+      "A0",
+      "B1"
+    ],
+    "skills": [
+      "grammar",
+      "vocabulary",
+      "listening"
+    ],
+    "formats": [
+      "video",
+      "interactive"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 4,
+    "notes": "Free video courses on grammar and vocabulary with exercises, explained in English. Some extras are paid.",
+    "site_search": "https://www.learndutch.org/?s={q}",
+    "lang": "en"
+  },
+  {
+    "id": "dutchgrammar",
+    "name": "DutchGrammar.com",
+    "domains": [
+      "dutchgrammar.com"
+    ],
+    "url": "https://www.dutchgrammar.com/",
+    "levels": [
+      "A1",
+      "B2"
+    ],
+    "skills": [
+      "grammar",
+      "vocabulary"
+    ],
+    "formats": [
+      "interactive",
+      "reference"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 4,
+    "notes": "Grammar explanations in English with self-checking exercises. Blocks some automated fetches, so it may score from the search snippet only.",
+    "lang": "en"
+  },
+  {
+    "id": "beterspellen",
+    "name": "Beter Spellen",
+    "domains": [
+      "beterspellen.nl"
+    ],
+    "url": "https://beterspellen.nl/",
+    "levels": [
+      "B1",
+      "C2"
+    ],
+    "skills": [
+      "grammar",
+      "writing"
+    ],
+    "formats": [
+      "interactive"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 4,
+    "notes": "Spelling and grammar drills (d/t verb endings, plurals, capitalisation). Written for native speakers, so best from B1 up."
+  },
+  {
+    "id": "easydutch",
+    "name": "Easy Dutch (Easy Languages)",
+    "domains": [
+      "easy-languages.org",
+      "easydutch.org"
+    ],
+    "url": "https://www.easy-languages.org/easy-dutch",
+    "levels": [
+      "A2",
+      "B2"
+    ],
+    "skills": [
+      "listening",
+      "vocabulary"
+    ],
+    "formats": [
+      "video"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 4,
+    "notes": "Street interviews with Dutch and English subtitles. Listening material, not exercises; good input for a theme.",
+    "lang": "en"
+  },
+  {
+    "id": "wablieft",
+    "name": "Wablieft",
+    "domains": [
+      "wablieft.be"
+    ],
+    "url": "https://wablieft.be/nl",
+    "levels": [
+      "A2",
+      "B1"
+    ],
+    "skills": [
+      "reading"
+    ],
+    "formats": [
+      "reading_text"
+    ],
+    "variant": "be",
+    "free": true,
+    "quality": 4,
+    "notes": "Flemish centre for clear language: news in easy Dutch. Reading texts rather than exercises; pair with questions."
+  },
+  {
+    "id": "jeugdjournaal",
+    "name": "NOS Jeugdjournaal",
+    "domains": [
+      "jeugdjournaal.nl"
+    ],
+    "url": "https://jeugdjournaal.nl/",
+    "levels": [
+      "A2",
+      "B1"
+    ],
+    "skills": [
+      "reading",
+      "listening"
+    ],
+    "formats": [
+      "reading_text",
+      "video"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 3,
+    "notes": "News for children in simple Dutch, with video. Current-affairs input, not exercises."
+  },
+  {
+    "id": "klascement",
+    "name": "KlasCement",
+    "domains": [
+      "klascement.net"
+    ],
+    "url": "https://www.klascement.net/",
+    "levels": [
+      "A0",
+      "C1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing",
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "pdf",
+      "interactive",
+      "worksheet"
+    ],
+    "variant": "be",
+    "free": true,
+    "quality": 3,
+    "notes": "Flemish teacher-shared resource platform with many NT2/OKAN worksheets. Quality varies; items carry teacher ratings."
+  },
+  {
+    "id": "wikiwijs",
+    "name": "Wikiwijs",
+    "domains": [
+      "wikiwijs.nl"
+    ],
+    "url": "https://www.wikiwijs.nl/",
+    "levels": [
+      "A0",
+      "C1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing",
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "interactive",
+      "worksheet"
+    ],
+    "variant": "nl",
+    "free": true,
+    "quality": 3,
+    "notes": "Dutch open educational resources, including NT2 lesson packages made by teachers. Quality varies."
+  },
+  {
+    "id": "nt2nl",
+    "name": "NT2.nl (ThiemeMeulenhoff)",
+    "domains": [
+      "nt2.nl"
+    ],
+    "url": "https://www.nt2.nl/",
+    "levels": [
+      "A0",
+      "C1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing",
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "interactive",
+      "coursebook"
+    ],
+    "variant": "nl",
+    "free": false,
+    "quality": 4,
+    "notes": "Online material for ThiemeMeulenhoff NT2 methods. Mostly needs a licence; some free samples."
+  },
+  {
+    "id": "boomnt2",
+    "name": "Boom NT2 School",
+    "domains": [
+      "nt2school.nl"
+    ],
+    "url": "https://www.nt2school.nl/",
+    "levels": [
+      "A0",
+      "C1"
+    ],
+    "skills": [
+      "reading",
+      "listening",
+      "speaking",
+      "writing",
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "interactive",
+      "coursebook"
+    ],
+    "variant": "nl",
+    "free": false,
+    "quality": 4,
+    "notes": "Boom NT2 digital platform tied to their methods (Nederlands in gang, Of course!, ...). Needs a licence."
+  },
+  {
+    "id": "dutchpod101",
+    "name": "DutchPod101",
+    "domains": [
+      "dutchpod101.com"
+    ],
+    "url": "https://www.dutchpod101.com/",
+    "levels": [
+      "A0",
+      "B2"
+    ],
+    "skills": [
+      "listening",
+      "vocabulary"
+    ],
+    "formats": [
+      "audio",
+      "video"
+    ],
+    "variant": "nl",
+    "free": false,
+    "quality": 3,
+    "notes": "Podcast-style lessons. Mostly paid, heavy upselling.",
+    "lang": "en"
+  },
+  {
+    "id": "wordwall",
+    "name": "Wordwall (user-made)",
+    "domains": [
+      "wordwall.net"
+    ],
+    "url": "https://wordwall.net/",
+    "levels": [
+      "A0",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "interactive"
+    ],
+    "variant": "both",
+    "free": true,
+    "quality": 2,
+    "notes": "Teacher-made games. Some excellent, many sloppy; check the content before using it.",
+    "user_generated": true
+  },
+  {
+    "id": "learningapps",
+    "name": "LearningApps (user-made)",
+    "domains": [
+      "learningapps.org"
+    ],
+    "url": "https://learningapps.org/",
+    "levels": [
+      "A0",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary",
+      "grammar"
+    ],
+    "formats": [
+      "interactive"
+    ],
+    "variant": "both",
+    "free": true,
+    "quality": 2,
+    "notes": "Teacher-made interactive exercises. Quality varies a lot.",
+    "user_generated": true
+  },
+  {
+    "id": "quizlet",
+    "name": "Quizlet (user-made)",
+    "domains": [
+      "quizlet.com"
+    ],
+    "url": "https://quizlet.com/",
+    "levels": [
+      "A0",
+      "B2"
+    ],
+    "skills": [
+      "vocabulary"
+    ],
+    "formats": [
+      "flashcards"
+    ],
+    "variant": "both",
+    "free": true,
+    "quality": 2,
+    "notes": "User flashcard sets, often with errors. Blocks automated fetches.",
+    "user_generated": true
+  }
+]
