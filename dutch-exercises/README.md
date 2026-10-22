@@ -14,6 +14,64 @@ level on the right topic.
 | `list_themes` | Everyday topics and grammar points with their Dutch search terms. |
 | `list_ratings` | Recent ratings. |
 
+## UI tools (MCP Apps)
+
+The server can also implement the [MCP Apps](https://modelcontextprotocol.io/specification/draft/extensions/apps)
+extension (`io.modelcontextprotocol/ui`). This is **optional and off by default**,
+because the main client (a Grok bot via the xAI Responses API) doesn't render
+MCP Apps. Set `MCP_APPS=1` to turn it on. Without it, the server exposes only
+the tools above. In hosts that support it, these tools open an interactive view
+in the conversation instead of returning plain JSON:
+
+| Tool | View |
+| --- | --- |
+| `show_exercises` | `find_exercises` results as cards: score, level fit, skills and formats, reasons, warnings, an **Open exercise** button and 1-5 rating buttons (they call `rate_exercise`). Pass the `results` of an earlier `find_exercises` call, or the same search parameters. |
+| `show_explanation` | A grammar or vocabulary explanation the agent writes: summary, sections, an optional table (e.g. a conjugation), Dutch examples with translations, and common mistakes. |
+| `show_exercise_set` | An exercise player for items the agent writes: multiple choice (`mc`), gap-fill (`gap`), word order (`order`), matching (`match`) and true/false (`truefalse`). The view checks the answers, shows feedback per item, stores the attempt and tells the agent the score. |
+| `record_attempt` | App-only (`visibility: ["app"]`): the player stores per-item results here. The agent can't call it. |
+| `list_attempts` | A plain tool: recent player scores, with the ids of the wrong items. |
+
+If `MCP_APPS=1` is set and a host without MCP Apps support connects, it still gets useful output. Every tool returns
+readable text: a ranked list, a markdown explanation, or the exercises with an
+answer key. It also returns the same `structuredContent` the views use.
+
+The views use the Concertje look from the concert digest emails
+(`dacostalindo/concerts`): a near-black canvas, Redaction serif headlines, heavy
+Inter names, uppercase tracked labels, white pill buttons and status pills with
+coloured dots. They follow the host's light/dark setting, but not its colours or
+fonts. Agent-written text is treated as untrusted and is always inserted as text,
+never as HTML. A small markdown subset is supported: `**bold**`, `*italic*`,
+`` `code` `` and `- ` bullets. Exercise sites are opened through the host
+(`openLink`), not embedded, because most of them block framing.
+
+**Hosts that render MCP Apps:** Claude (web and desktop), ChatGPT, VS Code
+(GitHub Copilot), Goose, Postman, MCPJam and others. See the current list at
+[modelcontextprotocol.io/clients](https://modelcontextprotocol.io/clients). API
+integrations like the xAI Responses API (Grok) call the tools but don't render
+the views. That's why `MCP_APPS` is off by default: a Grok bot would only see
+extra tools, including `record_attempt`, which Grok doesn't hide even though it
+is marked app-only.
+
+### Rebuilding the UI
+
+The views are TypeScript in `ui/`, built with Vite and `vite-plugin-singlefile`
+into one self-contained HTML file per view in `dutch_exercises/ui_dist/`. Fonts
+and scripts are inlined, so the views need no CSP domains. The built files are
+committed and shipped as package data, so installing and running the server
+needs no Node. After changing anything in `ui/`:
+
+```bash
+cd ui
+npm ci
+npm run typecheck
+npm run build        # writes ../dutch_exercises/ui_dist/{results,explanation,player}.html
+npm test             # Playwright: each view in a mocked MCP Apps host, tool calls go to the real server
+```
+
+`npm test` starts the Python server (`MCP_APPS=1 ../.venv/bin/dutch-exercises-mcp --transport http`) with a
+temporary data directory and writes screenshots to `ui/screenshots/`. To use a preinstalled Chromium, set
+`CHROMIUM_PATH=/path/to/chromium`.
+
 ## How it finds and grades exercises
 
 ```
@@ -92,6 +150,7 @@ You can force a backend with `SEARCH_PROVIDER=brave|tavily|searxng|duckduckgo`.
 | `SOURCES_FILE` | | Extra or overriding catalog entries |
 | `MCP_TOKEN` | | Bearer token for HTTP. Required to listen on a non-local interface. |
 | `MCP_ALLOWED_HOSTS` | | Enables DNS-rebinding protection for these Host headers |
+| `MCP_APPS` | off | `1` enables the optional MCP Apps UI tools and views (see [UI tools](#ui-tools-mcp-apps)) |
 
 The server only fetches public http(s) URLs. Every redirect hop is checked
 against private, loopback and link-local addresses.
@@ -100,6 +159,7 @@ against private, loopback and link-local addresses.
 
 ```bash
 .venv/bin/pytest -q                                   # offline; no network needed
+(cd ui && npm test)                                   # UI views in a mocked MCP Apps host (see above)
 .venv/bin/python scripts/debug_find.py "de of het" A1  # live: every candidate with score and warnings
 ```
 

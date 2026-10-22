@@ -1,0 +1,24 @@
+{
+  "title": "Het perfectum: hebben of zijn?",
+  "level": "A2",
+  "summary": "Het perfectum maak je met **hebben** of **zijn** + een voltooid deelwoord. De meeste werkwoorden gebruiken *hebben*.",
+  "sections": [
+    {"heading": "Wanneer zijn?", "body": "Gebruik **zijn** bij:\n- een verandering van plaats met een doel: `Ik ben naar huis gegaan.`\n- een verandering van toestand: worden, sterven, groeien\n- blijven, zijn, gebeuren"},
+    {"heading": "Het voltooid deelwoord", "body": "Regelmatig: **ge** + stam + **t** of **d** ('t kofschip).\nOnregelmatig: leer ze uit je hoofd (gaan → gegaan)."}
+  ],
+  "table": {
+    "caption": "Perfectum van werken en gaan",
+    "headers": ["", "werken (hebben)", "gaan (zijn)"],
+    "rows": [["ik", "heb gewerkt", "ben gegaan"], ["jij/u", "hebt gewerkt", "bent gegaan"], ["hij/zij", "heeft gewerkt", "is gegaan"],
+             ["wij/jullie/zij", "hebben gewerkt", "zijn gegaan"]]
+  },
+  "examples": [
+    {"nl": "Ik **heb** gisteren lang gewerkt.", "en": "I worked for a long time yesterday."},
+    {"nl": "Wij **zijn** naar Utrecht gefietst.", "en": "We cycled to Utrecht.", "note": "beweging met een doel → zijn"},
+    {"nl": "Wij **hebben** de hele dag gefietst.", "en": "We cycled all day.", "note": "geen doel → hebben"}
+  ],
+  "common_mistakes": [
+    {"wrong": "Ik heb naar huis gegaan.", "right": "Ik ben naar huis gegaan.", "why": "Gaan + richting gebruikt zijn."},
+    {"wrong": "Hij is gewerkt.", "right": "Hij heeft gewerkt.", "why": "Werken gebruikt hebben."}
+  ]
+}
