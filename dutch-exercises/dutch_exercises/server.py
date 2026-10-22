@@ -8,8 +8,8 @@ Tools:
   list_sources       the curated source catalog, filterable by level/skill/variant
   list_themes        the theme taxonomy (everyday topics and grammar points)
 
-UI tools (MCP Apps views, with text fallbacks) live in ui_tools.py: show_exercises, show_explanation,
-show_exercise_set, record_attempt (app-only) and list_attempts.
+Optional UI tools (MCP Apps views, with text fallbacks; enable with MCP_APPS=1) live in ui_tools.py:
+show_exercises, show_explanation, show_exercise_set, record_attempt (app-only) and list_attempts.
 """
 
 from __future__ import annotations
@@ -58,9 +58,14 @@ Workflow:
 Never present an exercise as matching a level or theme unless the result says so; level estimates are rough.
 """
 
-mcp = MCPServer(name="dutch-exercises", title="Dutch Exercise Finder", instructions=INSTRUCTIONS + UI_INSTRUCTIONS,
-                version=VERSION, extensions=[apps])
-register_ui_tools(mcp)
+# The MCP Apps UI tools are opt-in (MCP_APPS=1): hosts like Grok don't render them, and they'd only add tools.
+UI_ENABLED = os.environ.get("MCP_APPS", "").strip().lower() in ("1", "true", "yes", "on")
+
+mcp = MCPServer(name="dutch-exercises", title="Dutch Exercise Finder",
+                instructions=INSTRUCTIONS + (UI_INSTRUCTIONS if UI_ENABLED else ""), version=VERSION,
+                extensions=[apps] if UI_ENABLED else [])
+if UI_ENABLED:
+    register_ui_tools(mcp)
 
 _store: Store | None = None
 

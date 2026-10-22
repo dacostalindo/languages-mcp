@@ -21,7 +21,7 @@ export default defineConfig({
   webServer: {
     command: `../.venv/bin/dutch-exercises-mcp --transport http --port ${PORT}`,
     url: `http://127.0.0.1:${PORT}/healthz`,
-    env: { DATA_DIR: dataDir },
+    env: { DATA_DIR: dataDir, MCP_APPS: "1" },
     reuseExistingServer: false,
     timeout: 30_000,
   },

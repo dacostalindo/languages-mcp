@@ -16,9 +16,12 @@ level on the right topic.
 
 ## UI tools (MCP Apps)
 
-The server also implements the [MCP Apps](https://modelcontextprotocol.io/specification/draft/extensions/apps)
-extension (`io.modelcontextprotocol/ui`). In hosts that support it, these tools
-open an interactive view in the conversation instead of returning plain JSON:
+The server can also implement the [MCP Apps](https://modelcontextprotocol.io/specification/draft/extensions/apps)
+extension (`io.modelcontextprotocol/ui`). This is **optional and off by default**,
+because the main client (a Grok bot via the xAI Responses API) doesn't render
+MCP Apps. Set `MCP_APPS=1` to turn it on. Without it, the server exposes only
+the tools above. In hosts that support it, these tools open an interactive view
+in the conversation instead of returning plain JSON:
 
 | Tool | View |
 | --- | --- |
@@ -28,7 +31,7 @@ open an interactive view in the conversation instead of returning plain JSON:
 | `record_attempt` | App-only (`visibility: ["app"]`): the player stores per-item results here. The agent can't call it. |
 | `list_attempts` | A plain tool: recent player scores, with the ids of the wrong items. |
 
-Hosts without MCP Apps support still get useful output. Every tool returns
+If `MCP_APPS=1` is set and a host without MCP Apps support connects, it still gets useful output. Every tool returns
 readable text: a ranked list, a markdown explanation, or the exercises with an
 answer key. It also returns the same `structuredContent` the views use.
 
@@ -45,7 +48,9 @@ never as HTML. A small markdown subset is supported: `**bold**`, `*italic*`,
 (GitHub Copilot), Goose, Postman, MCPJam and others. See the current list at
 [modelcontextprotocol.io/clients](https://modelcontextprotocol.io/clients). API
 integrations like the xAI Responses API (Grok) call the tools but don't render
-the views, so they get the text output.
+the views. That's why `MCP_APPS` is off by default: a Grok bot would only see
+extra tools, including `record_attempt`, which Grok doesn't hide even though it
+is marked app-only.
 
 ### Rebuilding the UI
 
@@ -63,8 +68,8 @@ npm run build        # writes ../dutch_exercises/ui_dist/{results,explanation,pl
 npm test             # Playwright: each view in a mocked MCP Apps host, tool calls go to the real server
 ```
 
-`npm test` starts the Python server (`../.venv/bin/dutch-exercises-mcp --transport http`) with a temporary data
-directory and writes screenshots to `ui/screenshots/`. To use a preinstalled Chromium, set
+`npm test` starts the Python server (`MCP_APPS=1 ../.venv/bin/dutch-exercises-mcp --transport http`) with a
+temporary data directory and writes screenshots to `ui/screenshots/`. To use a preinstalled Chromium, set
 `CHROMIUM_PATH=/path/to/chromium`.
 
 ## How it finds and grades exercises
@@ -145,6 +150,7 @@ You can force a backend with `SEARCH_PROVIDER=brave|tavily|searxng|duckduckgo`.
 | `SOURCES_FILE` | | Extra or overriding catalog entries |
 | `MCP_TOKEN` | | Bearer token for HTTP. Required to listen on a non-local interface. |
 | `MCP_ALLOWED_HOSTS` | | Enables DNS-rebinding protection for these Host headers |
+| `MCP_APPS` | off | `1` enables the optional MCP Apps UI tools and views (see [UI tools](#ui-tools-mcp-apps)) |
 
 The server only fetches public http(s) URLs. Every redirect hop is checked
 against private, loopback and link-local addresses.

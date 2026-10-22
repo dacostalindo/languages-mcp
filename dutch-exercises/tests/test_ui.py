@@ -2,12 +2,15 @@
 
 import inspect
 import json
+import os
+import subprocess
+import sys
 
 import pytest
 from mcp import Client
 from mcp.client.extension import advertise
 
-from dutch_exercises import server, ui_tools
+from dutch_exercises import server, ui_tools  # MCP_APPS=1 is set in conftest.py
 from dutch_exercises.store import Store
 from dutch_exercises.ui_models import ExerciseSet, normalize_answer
 
@@ -46,6 +49,21 @@ async def test_extension_advertised_and_tools_bound():
     for name in EXISTING:  # existing tools are unchanged: no UI binding
         assert not (tools[name].meta or {}).get("ui")
     assert "list_attempts" in tools
+
+
+def test_ui_is_off_by_default():
+    # Without MCP_APPS the server is exactly the original one: no extension, no UI tools or resources.
+    code = ("import asyncio; from mcp import Client; from dutch_exercises.server import mcp\n"
+            "async def main():\n"
+            "    async with Client(mcp) as c:\n"
+            "        print(sorted(t.name for t in (await c.list_tools()).tools))\n"
+            "        print(len((await c.list_resources()).resources), c.server_capabilities.extensions)\n"
+            "asyncio.run(main())")
+    env = {k: v for k, v in os.environ.items() if k != "MCP_APPS"}
+    out = subprocess.run([sys.executable, "-c", code], env=env, capture_output=True, text=True, check=True).stdout
+    tools, rest = out.strip().splitlines()
+    assert eval(tools) == sorted(EXISTING)
+    assert rest.split()[0] == "0" and "modelcontextprotocol/ui" not in rest
 
 
 async def test_resources_are_mcp_app_html():
