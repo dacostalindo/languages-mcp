@@ -36,6 +36,8 @@ class Source:
     notes: str
     user_generated: bool = False
     site_search: str = ""
+    connector: str = ""
+    lang: str = "nl"  # language the site's pages are written in (instructions, titles)
     extra: dict = field(default_factory=dict, compare=False, hash=False)
 
     def covers(self, level: str) -> bool:
@@ -57,6 +59,7 @@ def _load(path: Path) -> list[Source]:
             skills=tuple(d["skills"]), formats=tuple(d["formats"]), variant=d.get("variant", "nl"),
             free=d.get("free", True), quality=int(d.get("quality", 3)), notes=d.get("notes", ""),
             user_generated=d.get("user_generated", False), site_search=d.get("site_search", ""),
+            connector=d.get("connector", ""), lang=d.get("lang", "nl"),
         ))
     return out
 

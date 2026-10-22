@@ -17,6 +17,8 @@ EXAM_PAGE = re.compile(r"oefenexamen|voorbeeldexamen|oefentoets|oefenen|examens?
 OVERVIEW_PAGE = re.compile(r"materialen\s*(oefenen\.nl|overzicht)|materialenoverzicht|brochure|folder|jaarverslag|"
                            r"inschrijven|aanmelden|tarieven|veelgestelde vragen|\bfaq\b|over ons|contact", re.I)
 
+FORUM_PAGE = re.compile(r"/forums?/|viewtopic|showthread|/threads?/|/community/|/discussions?/|/questions/", re.I)
+
 
 @dataclass
 class Request:
@@ -102,8 +104,9 @@ def score(req: Request, url: str, title: str, snippet: str, a: Analysis | None, 
         pts += min(8, sum(body.values()))
         if not strong:
             why.append(f"theme words in text: {', '.join(list(body)[:3])}")
-    if not strong and not body:
-        pts -= 8
+    off_theme = not strong and not body
+    if off_theme:
+        pts -= 10
         warn.append(f"no sign of theme '{req.theme['label']}'")
 
     # 4. Is it actually an exercise? (0-20)
@@ -183,7 +186,12 @@ def score(req: Request, url: str, title: str, snippet: str, a: Analysis | None, 
         warn.append("not fetched" + (f" ({a.error})" if a and a.error else "") + ": scored from the search snippet")
         pts = min(pts, 55)
 
+    if FORUM_PAGE.search(url) or re.search(r"\bforum\b", title, re.I):
+        pts -= 15
+        warn.append("discussion thread, not an exercise")
     if overview:
         pts = min(pts - 10, 45)
+    if off_theme:
+        pts = min(pts, 45)  # whatever its other merits, it isn't about what was asked
     return Scored(score=max(0, min(100, round(pts))), level_fit=fit, reasons=why, warnings=warn,
                   levels=levels, estimated_level=est)

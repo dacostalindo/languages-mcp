@@ -104,6 +104,7 @@ class Analysis:
     paywall: bool = False
     embeds: list[str] = field(default_factory=list)
     linked_pdfs: list[str] = field(default_factory=list)
+    links: list = field(default_factory=list)  # [url, anchor text] same-site links in the main content
     excerpt: str = ""
     text: str = field(default="", repr=False)
 
@@ -265,6 +266,15 @@ def analyze_html(url: str, html: str) -> Analysis:
         tag.decompose()
     main = soup.find("main") or soup.find("article") or soup.body or soup
     a.headings = [h.get_text(" ", strip=True)[:120] for h in main.find_all(["h1", "h2", "h3"])][:15]
+    host = (urlparse(url).hostname or "").removeprefix("www.")
+    for link in main.find_all("a", href=True):
+        target = urljoin(url, link["href"]).split("#")[0]
+        thost = (urlparse(target).hostname or "").removeprefix("www.")
+        text = link.get_text(" ", strip=True)
+        if target != url and text and (thost == host or thost.endswith("." + host)) and \
+                len(urlparse(target).path.strip("/")) > 3:
+            a.links.append([target, text[:120]])
+    a.links = a.links[:120]
     text = main.get_text("\n", strip=True)
     a.text = text
 

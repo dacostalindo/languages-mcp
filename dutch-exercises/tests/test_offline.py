@@ -74,7 +74,11 @@ def test_sources():
 def test_query_planning():
     req = Request(level="A2", theme=resolve_theme("perfectum"))
     plans = plan_queries(req, select_sources("A2", [], "any", True), vetted_only=False)
-    assert plans[0][0] == "voltooide tijd A2" and len(plans[0][1]) == 4
+    assert plans[0][0] == "voltooide tijd" and len(plans[0][1]) == 4  # grammar: no level in the query
+    assert any(p[0] == "Dutch perfect tense exercise" and "learndutch.org" in p[1] for p in plans)
+    topic = plan_queries(Request(level="A1", theme=resolve_theme("boodschappen")),
+                         select_sources("A1", [], "any", True), vetted_only=False)
+    assert topic[0][0] == "boodschappen A1" and "nedbox.be" not in topic[0][1]  # NedBox goes through its API
     assert any("Dutch grammar" in p[0] for p in plans)
     assert all(p[1] for p in plan_queries(req, select_sources("A2", [], "any", True), vetted_only=True))
     assert build_query("x", ["a.nl", "b.nl"]) == "x (site:a.nl OR site:b.nl)"
@@ -159,3 +163,54 @@ def test_login_wall_detected():
             "<p>Test je kennis van de lidwoorden. Meld aan of registreer om dit leermiddel volledig te bekijken.</p>"
             "</main></body></html>")
     assert analyze_html("https://www.klascement.net/oefeningen/1/x/", html).paywall
+
+
+def test_singular_for_site_search():
+    from dutch_exercises.finder import singular
+    assert singular("lidwoorden") == "lidwoord"
+    assert singular("boodschappen") == "boodschap"
+    assert singular("voorzetsels") == "voorzetsel"
+    assert singular("de of het") == "de of het" and singular("werk") == "werk"
+
+
+NEDBOX_ITEM = {"id": "abc", "name": "Dokter, ik begrijp het niet!", "description": "Duidelijke taal bij de dokter",
+               "media": "ARTICLE", "themes": ["LEVEN_IN_BELGIE", "GEZONDHEID"],
+               "difficulties": ["HARD", "MEDIUM", "EASY"], "skills": ["LISTENING", "READING", "VOCABULARY"]}
+
+
+def test_nedbox_item_becomes_scored_exercise():
+    from dutch_exercises.connectors import nedbox_analysis
+    hit, a = nedbox_analysis(NEDBOX_ITEM, "A2")
+    assert hit.url == "https://nedbox.be/exercise/abc" and a.stated_levels[0] == "A2"
+    assert set(a.stated_levels) == {"A1", "A2", "B1"} and "listening" in a.skills and a.has_answer_key
+    assert nedbox_analysis({**NEDBOX_ITEM, "difficulties": ["HARD"]}, "A1") is None
+    s = score(Request(level="A2", theme=resolve_theme("at the doctor")), hit.url, "", "", a,
+              source_for_url(hit.url))
+    assert s.score >= 70 and s.level_fit == "exact"
+
+
+def test_hub_links_are_collected():
+    html = ('<html><head><title>NT2 - A2 - Grammatica - Menu Lidwoord</title></head><body><nav>'
+            '<a href="/contact-page/">Contact</a></nav><main><h1>Menu Lidwoord</h1>'
+            '<a href="/nt2-a2-grammatica-lidwoord-oefening1/">Lidwoord - Oef 1</a>'
+            '<a href="https://other.org/lidwoord/">Elders</a></main></body></html>')
+    a = analyze_html("https://nt2taalmenu.nl/nt2-a2-grammatica-menulidwoord/", html)
+    assert a.links == [["https://nt2taalmenu.nl/nt2-a2-grammatica-lidwoord-oefening1/", "Lidwoord - Oef 1"]]
+
+
+def test_off_theme_and_forum_pages_are_capped():
+    req = Request(level="A1", theme=resolve_theme("de of het"))
+    url = "https://nt2taalmenu.nl/nt2-a2-grammatica-voltooide-tijd-oefening1/"
+    off = score(req, url, "", "", analyze_html(url, EXERCISE_PAGE), source_for_url(url))
+    assert off.score <= 45
+    forum = score(req, "https://www.dutchgrammar.com/forum/viewtopic.php?t=1490", "De or Het - Forum", "", None,
+                  source_for_url("https://www.dutchgrammar.com/"))
+    assert any("discussion" in w for w in forum.warnings) and forum.score < 30
+
+
+def test_theme_keywords_match_whole_words():
+    from dutch_exercises.themes import theme_hits
+    assert theme_hits(["werk"], "Spelling van werkwoorden") == {}
+    assert theme_hits(["profession"], "Educatief Professioneel") == {}
+    assert theme_hits(["huis"], "Een huisje in Gent") == {"huis": 1}
+    assert theme_hits(["dokter"], "Bij de dokters") == {"dokter": 1}

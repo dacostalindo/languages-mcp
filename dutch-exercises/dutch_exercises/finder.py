@@ -11,6 +11,7 @@ import httpx
 
 from . import search as search_mod
 from .analyze import Analysis, analyze_url
+from .connectors import CONNECTORS
 from .levels import stated_levels
 from .scoring import Request, score
 from .sources import Source, host_of, is_blocked, select_sources, source_for_url
@@ -18,7 +19,7 @@ from .store import Store
 from .themes import THEMES, theme_hits
 
 # Bump when analysis logic changes so cached page analyses are redone.
-ANALYSIS_VERSION = "3"
+ANALYSIS_VERSION = "4"
 
 TRACKING = re.compile(r"^(utm_|fbclid|gclid|ref$|mc_)")
 
@@ -32,25 +33,54 @@ def normalize_url(url: str) -> str:
 
 
 def plan_queries(req: Request, sources: list[Source], vetted_only: bool, extra: str = "") -> list[tuple[str, list[str]]]:
-    """(terms, domains) pairs. Site-restricted queries over the best sources first, then the open web."""
+    """(terms, domains) pairs. Site-restricted queries over the best sources first, then the open web.
+
+    Topic queries include the level, because NT2 sites organise topics by level. Grammar queries don't:
+    a grammar point lives at one level on a site (de/het is A2 on NT2 TaalMenu), and the level filter is
+    applied when scoring anyway. English-language sites get English terms.
+    """
     t = req.theme
     term = t["search_terms"][0]
+    second = t["search_terms"][1] if len(t["search_terms"]) > 1 else term
+    grammar = t["kind"] == "grammar"
+    en = THEMES[t["key"]][3][0] if t["key"] else t["label"]
     extra = f" {extra.strip()}" if extra.strip() else ""
+    level = "" if grammar else f" {req.level}"
+    searchable = [s for s in sources if not s.connector]
+    nl = [s.domains[0] for s in searchable if s.lang != "en"]
+    en_sites = [s.domains[0] for s in searchable if s.lang == "en"]
     plans: list[tuple[str, list[str]]] = []
-    domains = [s.domains[0] for s in sources]
-    if domains[:4]:
-        plans.append((f"{term} {req.level}{extra}", domains[:4]))
-    if domains[4:8]:
-        plans.append((f"{term} oefening{extra}", domains[4:8]))
+    if nl[:4]:
+        plans.append((f"{term}{level}{extra}", nl[:4]))
+    if nl[4:8]:
+        plans.append((f"{term} oefening{extra}", nl[4:8]))
+    if en_sites[:4]:
+        plans.append((f"Dutch {en} exercise{extra}", en_sites[:4]))
     if not vetted_only:
-        plans.append((f"{term} oefening NT2 {req.level}{extra}", []))
-        en = THEMES[t["key"]][3][0] if t["key"] else t["label"]
-        if t["kind"] == "grammar":
+        if grammar:
+            plans.append((f"{second} oefening NT2{extra}", []))
             plans.append((f"Dutch grammar {en} exercises {req.level}{extra}", []))
         else:
-            second = t["search_terms"][1] if len(t["search_terms"]) > 1 else term
+            plans.append((f"{term} oefening NT2 {req.level}{extra}", []))
             plans.append((f"{second} Nederlands leren oefenen {req.level}{extra}", []))
     return plans
+
+
+def singular(term: str) -> str:
+    """Rough Dutch singular for one-word terms ('lidwoorden' -> 'lidwoord', 'boodschappen' -> 'boodschap').
+
+    Site search engines (WordPress) match substrings, so the singular also finds the plural.
+    """
+    if " " in term or len(term) < 7:
+        return term
+    if term.endswith("en"):
+        stem = term[:-2]
+        if len(stem) > 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou":
+            stem = stem[:-1]
+        return stem
+    if term.endswith("s") and term[-3:-1] in ("el", "er", "je"):
+        return term[:-1]
+    return term
 
 
 def _prescore(req: Request, title: str, snippet: str, url: str) -> float:
@@ -125,6 +155,29 @@ class Finder:
             self.store.put_page(key, data)
         return a
 
+    async def _expand_hubs(self, client, req: Request, checked, seen: dict, check, max_new: int = 8) -> list:
+        """Follow theme links one level down from on-theme hub pages ('Grammatica - Menu Lidwoord' ->
+        'Lidwoord - Oef 1', 'Oef 2', ...). Exercises often sit one click below the page search finds."""
+        kws = req.theme["keywords"]
+        children: list[search_mod.Hit] = []
+        for h, a in checked:
+            if not (a.ok and a.links) or not theme_hits(kws, f"{a.title} {' '.join(a.headings)} {a.final_url}"):
+                continue
+            picked = 0
+            for url, text in a.links:
+                key = normalize_url(url)
+                if key in seen or "?" in url or not theme_hits(kws, f"{text} {url.replace('-', ' ')}") \
+                        or is_blocked(url):
+                    continue
+                seen[key] = search_mod.Hit(url, text, "", f"via:{a.final_url}")
+                children.append(seen[key])
+                picked += 1
+                if picked >= 3 or len(children) >= max_new:
+                    break
+            if len(children) >= max_new:
+                break
+        return list(await asyncio.gather(*(check(h) for h in children)))
+
     async def find(self, req: Request, *, variant: str = "any", max_results: int = 8, vetted_only: bool = False,
                    include_user_generated: bool = False, extra_terms: str = "", inspect_limit: int = 14) -> dict:
         sources = select_sources(req.level, req.skills, variant, req.free_only, include_user_generated)
@@ -134,16 +187,20 @@ class Finder:
         client = self._client()
         try:
             native = [s for s in sources if s.site_search][:3]
-            terms = req.theme["search_terms"][:2]
+            terms = list(dict.fromkeys(singular(x) for x in req.theme["search_terms"][:2]))
             native_jobs = [(s, term) for s in native for term in terms]
-            web, *site = await asyncio.gather(
+            connected = [s for s in sources if s.connector in CONNECTORS]
+            web, *rest = await asyncio.gather(
                 self._search(client, plans, region),
                 *(search_mod.site_search(client, s.site_search, term) for s, term in native_jobs),
+                *(CONNECTORS[s.connector](client, req, req.theme["search_terms"]) for s in connected),
             )
+            site, direct = rest[:len(native_jobs)], rest[len(native_jobs):]
             hits, errors, queries = web
             # Site-native hits first among equals: they come straight from the best sources.
             hits = [h for group in site for h in group] + hits
             queries = queries + [f"{s.name} site search: {term}" for s, term in native_jobs]
+            queries += [f"{s.name} API" for s in connected]
 
             seen: dict[str, search_mod.Hit] = {}
             for h in hits:
@@ -169,7 +226,13 @@ class Finder:
                 async with sem:
                     return h, await self.analyze(client, h.url)
 
-            checked = await asyncio.gather(*(check(h) for h in to_check))
+            checked = list(await asyncio.gather(*(check(h) for h in to_check)))
+            # Connector results arrive pre-analysed; keep the best few per connector.
+            for pairs in direct:
+                checked += sorted(pairs, key=lambda p: bool(theme_hits(req.theme["keywords"], p[1].text)),
+                                  reverse=True)[:6]
+            seen.update({normalize_url(h.url): h for pairs in direct for h, _ in pairs})
+            checked += await self._expand_hubs(client, req, checked, seen, check)
         finally:
             if own_client:
                 await client.aclose()
@@ -197,6 +260,8 @@ class Finder:
                 "preview": (a.description or a.excerpt[:240]) if a.ok else h.snippet[:240],
                 "linked_pdfs": a.linked_pdfs[:3] if a.ok else [],
             })
+            if h.query.startswith("via:"):
+                results[-1]["found_via"] = h.query[4:]
 
         results.sort(key=lambda r: r["score"], reverse=True)
         final, per_source, seen_keys = [], {}, set()

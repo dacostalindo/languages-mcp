@@ -21,9 +21,12 @@ theme + level ──► resolve  "at the doctor" → gezondheid: huisarts, dokte
                            "Staatsexamen I" → B1
              ──► pick curated sources covering the level (data/sources.json)
              ──► search    site-restricted web queries on the best sources
-                           + open-web queries (Dutch, and English for grammar)
+                           (English terms for English-language sites; no level for grammar)
+                           + open-web queries
                            + the sites' own search pages (no API key needed)
-             ──► fetch & analyse the top ~14 candidates (HTML or PDF)
+                           + source APIs (NedBox) with structured level/skill data
+             ──► fetch & analyse the top ~14 candidates (HTML or PDF), max 4 per site
+             ──► follow theme links one level down from on-theme hub pages
              ──► score 0-100, dedupe mirrors, max 3 per source, rank
 ```
 
@@ -35,7 +38,7 @@ Each page gets a score from 0 to 100, built from these parts:
 - **Is it an exercise? (up to 20):** H5P, Wordwall, LearningApps or form inputs; exercise wording ("vul in", "kies het juiste"…); blanks and numbered items. Exam sites count too. A text with no tasks is marked as reading material.
 - **Answer key or feedback (+6):** an answer link, a "controleer" button, or a tool that checks answers itself (H5P and similar).
 - **Requested skills and formats:** extra points for a match.
-- **Penalties:** paywall or login, pages that are almost all English, home pages, and search-results pages. A page that couldn't be fetched is scored from its search snippet only, capped at 55, and flagged.
+- **Penalties:** paywall or login, pages that are almost all English, home pages, search-results pages and forum threads. Pages with no sign of the theme, and overview or brochure pages, are capped at 45. A page that couldn't be fetched is scored from its search snippet only, capped at 55, and flagged.
 
 The curated catalog has 20 sources. They include NT2 TaalMenu, Oefenen.nl
 (including Taalklas.nl), NedBox, the official Staatsexamens Nt2, DUO and CNaVT
@@ -96,15 +99,21 @@ against private, loopback and link-local addresses.
 ## Tests
 
 ```bash
-.venv/bin/pytest -q    # offline; no network needed
+.venv/bin/pytest -q                                   # offline; no network needed
+.venv/bin/python scripts/debug_find.py "de of het" A1  # live: every candidate with score and warnings
 ```
 
 ## Limits
 
 - The level estimate measures how hard the text is to read, not how hard the
   exercise is. Treat `level.fit: "estimated*"` as a hint.
-- Sites that build their content with JavaScript (NedBox, parts of Oefenen.nl)
-  show little text to the fetcher. They still rank on source reputation, title
-  and URL, and get a "very little content" warning.
+- NedBox is JavaScript-only, so it's searched through its public JSON API
+  instead (`connectors.py`). Its levels come from NedBox's own mapping: one
+  star ≈ A1, two ≈ A2, three ≈ B1+. Its exercise details need a login, so a
+  grammar term that NedBox matched inside an item is shown but not counted as
+  on-theme.
+- Other JavaScript-built pages (parts of Oefenen.nl) show little text to the
+  fetcher. They rank on source reputation, title and URL, and get a "very
+  little content" warning.
 - DutchGrammar.com and Quizlet block automated fetches, so they are scored from
   snippets.

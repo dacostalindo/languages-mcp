@@ -155,7 +155,9 @@ def theme_hits(keywords: list[str], text: str) -> dict[str, int]:
     low = text.lower()
     hits = {}
     for kw in keywords:
-        n = len(re.findall(rf"(?<![\w]){re.escape(kw.lower())}", low))
+        # Whole words plus common Dutch/English endings: "huis" matches "huisje" but "werk" doesn't
+        # match "werkwoorden" and "profession" doesn't match "professioneel".
+        n = len(re.findall(rf"(?<![\w]){re.escape(kw.lower())}(?:en|s|e|je|jes|n)?(?![\w])", low))
         if n:
             hits[kw] = n
     return hits

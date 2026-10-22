@@ -80,7 +80,8 @@
     "variant": "be",
     "free": true,
     "quality": 5,
-    "notes": "Flemish platform of short authentic videos and texts (news, everyday situations) with exercises at several levels."
+    "notes": "Flemish platform of short authentic videos and articles, each with exercises at three levels (one star ≈ A1, two ≈ A2, three ≈ B1+). Searched through its public API, since the site is JavaScript-only.",
+    "connector": "nedbox"
   },
   {
     "id": "staatsexamens",
@@ -185,7 +186,8 @@
     "free": true,
     "quality": 4,
     "notes": "Free video courses on grammar and vocabulary with exercises, explained in English. Some extras are paid.",
-    "site_search": "https://www.learndutch.org/?s={q}"
+    "site_search": "https://www.learndutch.org/?s={q}",
+    "lang": "en"
   },
   {
     "id": "dutchgrammar",
@@ -209,7 +211,8 @@
     "variant": "nl",
     "free": true,
     "quality": 4,
-    "notes": "Grammar explanations in English with self-checking exercises. Blocks some automated fetches, so it may score from the search snippet only."
+    "notes": "Grammar explanations in English with self-checking exercises. Blocks some automated fetches, so it may score from the search snippet only.",
+    "lang": "en"
   },
   {
     "id": "beterspellen",
@@ -256,7 +259,8 @@
     "variant": "nl",
     "free": true,
     "quality": 4,
-    "notes": "Street interviews with Dutch and English subtitles. Listening material, not exercises; good input for a theme."
+    "notes": "Street interviews with Dutch and English subtitles. Listening material, not exercises; good input for a theme.",
+    "lang": "en"
   },
   {
     "id": "wablieft",
@@ -439,7 +443,8 @@
     "variant": "nl",
     "free": false,
     "quality": 3,
-    "notes": "Podcast-style lessons. Mostly paid, heavy upselling."
+    "notes": "Podcast-style lessons. Mostly paid, heavy upselling.",
+    "lang": "en"
   },
   {
     "id": "wordwall",
